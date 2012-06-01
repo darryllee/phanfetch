@@ -9,12 +9,13 @@ require 'open-uri'
 load 'config.txt'
 
 def fetch(url)
-		filename = url.path.split('/')[-1]
-		localpath = $localdir + filename
+	filename = url.path.split('/')[-1]
 
-		unless File.exists?(localpath) 
-			puts "Downloading #{url}"
-			Net::HTTP.start(url.host) do |http|
+	localpath = $localdir + filename
+
+	unless File.exists?(localpath) 
+#		puts "Downloading #{url}"
+		Net::HTTP.start(url.host) do |http|
         		begin
 	            		file = open(localpath, 'wb')
 					http.request_get(url.path) do |response|
@@ -27,21 +28,34 @@ def fetch(url)
     			end
 	    	end
 	end
+	localpath
 end
 
-images = [];
+images = []
+feedfiles = [] 
 
 open($feedurl) do |rss|
 
     feed = RSS::Parser.parse(rss)
 	feed.items.each do |item|
 		images.push(URI.parse(item.link))
-#		fetch(u)
+		feedfiles.push(URI.parse(item.link).path.split('/')[-1])
 	end
 end
 
 # Slowly: images.each do | u | 
 
 Parallel.each(images, :in_processes => 8) do | u | 
-	fetch(u) 
+	fetch(u)
 end
+
+localfiles = Dir.glob("*.jpg")
+
+deletedfiles = localfiles - feedfiles 
+
+puts deletedfiles
+
+# TODO:  delete images that are no longer in feed
+# - load list of images in $localdir into array
+# - subtract it from list of images in feed (need to extract that) [feedfiles]
+# - delete files no longer in feed
