@@ -14,7 +14,7 @@ def fetch(url)
 	localpath = $localdir + filename
 
 	unless File.exists?(localpath) 
-#		puts "Downloading #{url}"
+		puts "Downloading: #{url}"
 		Net::HTTP.start(url.host) do |http|
         		begin
 	            		file = open(localpath, 'wb')
@@ -49,11 +49,18 @@ Parallel.each(images, :in_processes => 8) do | u |
 	fetch(u)
 end
 
-localfiles = Dir.glob("*.jpg")
+localfiles = Dir.glob($localdir + "*.jpg").collect { |fullpath| fullpath.split('/')[-1] }
 
 deletedfiles = localfiles - feedfiles 
 
-puts deletedfiles
+# puts feedfiles
+# puts localfiles
+
+deletedfiles.each do | u |
+	puts "Deleting: " + $localdir + u
+	File.delete($localdir + u)
+end
+
 
 # TODO:  delete images that are no longer in feed
 # - load list of images in $localdir into array
