@@ -61,8 +61,3 @@ deletedfiles.each do | u |
 	File.delete($localdir + u)
 end
 
-
-# TODO:  delete images that are no longer in feed
-# - load list of images in $localdir into array
-# - subtract it from list of images in feed (need to extract that) [feedfiles]
-# - delete files no longer in feed
